@@ -1,0 +1,43 @@
+# render.yaml — конфигурация для деплоя на Render.com
+# Документация: https://render.com/docs/render-yaml
+
+services:
+  # ========================
+  # СЕРВЕР (Node.js/Socket.io)
+  # ========================
+  - type: web
+    name: tankiki-server
+    env: node
+    region: frankfurt  # Ближайший к СНГ
+    plan: free         # Бесплатный tier (для продакшна — starter или выше)
+    rootDir: server
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+    healthCheckPath: /health
+    # Для 50+ игроков рекомендуется plan: starter (не засыпает)
+
+  # ========================
+  # КЛИЕНТ (Static Site)
+  # ========================
+  - type: static
+    name: tankiki-client
+    rootDir: client
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    envVars:
+      - key: VITE_SERVER_URL
+        # Замените на URL вашего сервера после деплоя
+        value: https://tankiki-server.onrender.com
+    headers:
+      - path: /*
+        name: Cache-Control
+        value: no-cache
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
