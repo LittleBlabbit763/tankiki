@@ -7,7 +7,7 @@ import { soundManager }   from '../sounds/SoundManager.js';
 import {
   Leaderboard, KillFeed, BottomBar, Crosshair,
   Minimap, LevelUpBanner, ArenaNotif, RespawnOverlay,
-  ControlsHint, ConnStatus,
+  ControlsHint, ConnStatus, PingDisplay,
 } from './HUD.jsx';
 
 export function Game({ nickname }) {
@@ -29,6 +29,7 @@ export function Game({ nickname }) {
   const [lvlBanner,  setLvlBanner]  = useState(null);
   const [arenaNotif, setArenaNotif] = useState(null);
   const [myId,       setMyId]       = useState(null);
+  const [ping,       setPing]       = useState(null);
 
   // Буфер для throttled UI обновлений
   const uiBuf      = useRef({ lb: [], me: null, miniMap: null });
@@ -41,6 +42,11 @@ export function Game({ nickname }) {
     connect      : () => setConnStatus('connected'),
     disconnect   : () => setConnStatus('disconnected'),
     connect_error: () => setConnStatus('disconnected'),
+
+    // Получаем обратно наш timestamp — RTT готов
+    pong_check(sentAt) {
+      setPing(Math.round(performance.now() - sentAt));
+    },
 
     init(data) {
       myIdRef.current = data.id;
@@ -128,6 +134,13 @@ export function Game({ nickname }) {
 
     emitRef.current('join', { nickname });
 
+    // Замер пинга каждые 2 секунды
+    const pingInterval = setInterval(() => {
+      emitRef.current('ping_check', performance.now());
+    }, 2000);
+    // Первый замер сразу
+    setTimeout(() => emitRef.current('ping_check', performance.now()), 500);
+
     let lastTime     = performance.now();
     let prevShooting = false;
 
@@ -194,6 +207,7 @@ export function Game({ nickname }) {
 
     return () => {
       cancelAnimationFrame(animRef.current);
+      clearInterval(pingInterval);
       window.removeEventListener('resize', onResize);
       scene.dispose();
       sceneRef.current = null;
@@ -219,6 +233,7 @@ export function Game({ nickname }) {
         <Minimap data={miniMap} />
         <ControlsHint />
         <BottomBar {...stats} />
+        <PingDisplay ping={ping} />
       </div>
       {lvlBanner  && <LevelUpBanner level={lvlBanner} />}
       {arenaNotif && <ArenaNotif show size={arenaNotif} />}

@@ -230,3 +230,48 @@ export function ConnStatus({ status }) {
     </div>
   );
 }
+
+// ========================
+// Ping display
+// ========================
+export function PingDisplay({ ping }) {
+  // Цвет зависит от задержки
+  const color = ping === null
+    ? '#666'
+    : ping < 60  ? '#39ff14'   // хороший — зелёный
+    : ping < 120 ? '#ffcc00'   // средний — жёлтый
+    : ping < 200 ? '#ff8800'   // плохой — оранжевый
+    :              '#ff3333';  // критический — красный
+
+  const label = ping === null ? '—' : `${ping} ms`;
+
+  return (
+    <div style={{
+      position       : 'absolute',
+      bottom         : '88px',   // над нижней панелью
+      left           : '16px',
+      fontFamily     : 'var(--font-mono)',
+      fontSize       : '0.72rem',
+      letterSpacing  : '0.05em',
+      color,
+      background     : 'rgba(10,26,10,0.75)',
+      border         : `1px solid ${color}40`,
+      borderRadius   : '3px',
+      padding        : '3px 8px',
+      display        : 'flex',
+      alignItems     : 'center',
+      gap            : '5px',
+      userSelect     : 'none',
+      pointerEvents  : 'none',
+      transition     : 'color 0.4s',
+    }}>
+      {/* Иконка сигнала */}
+      <svg width="10" height="10" viewBox="0 0 10 10" style={{ flexShrink: 0 }}>
+        <rect x="0" y="7" width="2" height="3" fill={ping !== null && ping < 200 ? color : '#333'} rx="0.5"/>
+        <rect x="3" y="4" width="2" height="6" fill={ping !== null && ping < 120 ? color : '#333'} rx="0.5"/>
+        <rect x="6" y="1" width="2" height="9" fill={ping !== null && ping <  60 ? color : '#333'} rx="0.5"/>
+      </svg>
+      {label}
+    </div>
+  );
+}

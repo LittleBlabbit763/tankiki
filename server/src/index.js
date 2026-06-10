@@ -423,6 +423,11 @@ io.on('connection', (socket) => {
     p.input.turretAngle = (typeof inp.turretAngle === 'number') ? inp.turretAngle : 0;
   });
 
+  // Пинг: клиент шлёт timestamp, сервер возвращает его обратно
+  socket.on('ping_check', (ts) => {
+    socket.emit('pong_check', ts);
+  });
+
   socket.on('disconnect', () => {
     delete gs.players[socket.id];
     io.emit('playerLeft', { id: socket.id });

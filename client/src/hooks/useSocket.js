@@ -22,7 +22,8 @@ export function useSocket(handlersRef) {
       'blockDestroyed', 'blockHit',
       'pickupCollected', 'shot',
       'killedEnemy', 'playerJoined', 'playerLeft',
-      'arenaExpanded',           // новое событие расширения арены
+      'arenaExpanded',
+      'pong_check',
     ];
 
     for (const ev of EVENTS) {
